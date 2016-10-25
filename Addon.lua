@@ -10,6 +10,10 @@ local L = LibStub('AceLocale-3.0'):GetLocale('tdBag_Config')
 local AceConfigRegistry = LibStub('AceConfigRegistry-3.0')
 local AceConfigDialog   = LibStub('AceConfigDialog-3.0')
 
+local Option = {} Addon.Option = Option
+
+Option.frameID = 'inventory'
+
 local function OrderFactory()
     local order = 0
     return function()
@@ -20,6 +24,15 @@ end
 
 local order = OrderFactory()
 
+local function merge(dest, src)
+    if type(src) == 'table' then
+        for k, v in pairs(src) do
+            dest[k] = v
+        end
+    end
+    return dest
+end
+
 local function MakeFill()
     return {
         type  = 'description',
@@ -28,12 +41,12 @@ local function MakeFill()
     }
 end
 
-local function MakeToggle(name)
-    return {
+local function MakeToggle(name, more)
+    return merge({
         type  = 'toggle',
         name  = name,
         order = order()
-    }
+    }, more)
 end
 
 local function MakeFullToggle(name)
@@ -92,50 +105,49 @@ local function MakeDesc(name)
     }
 end
 
-local function MakeBagOption(id, o)
-    local sets = tdBag.profile[id]
+local function MakeSelect(opts)
+    local old = {}
+    local new = {}
 
-    return {
-        type  = 'group',
-        name  = id,
-        order = o,
-        set   = function(item, value)
-            sets[item[#item]] = value
-            tdBag:UpdateFrames()
-        end,
-        get = function(item)
-            return sets[item[#item]]
-        end,
-        args = {
-            show         = MakeHeader(DISPLAY),
-            sort         = MakeToggle(L.Sort),
-            money        = MakeToggle(L.Money),
-            broker       = MakeToggle(L.Token),
-            appearance   = MakeHeader(L.Appearance),
-            reverseBags  = MakeToggle(L.ReverseBags),
-            reverseSlots = MakeToggle(L.ReverseSlots),
-            bagBreak     = MakeToggle(L.BagBreak),
-            __fill1      = MakeFill(),
-            columns      = MakeRange(L.Columns, 6, 36, 1),
-            alpha        = MakeRange(L.Alpha, 0, 1),
-            __fill2      = MakeFill(),
-            scale        = MakeRange(L.Scale, 0.2, 3),
-            itemScale    = MakeRange(L.ItemScale, 0.2, 3),
-            __fill3      = MakeFill(),
-            strata       = {
-                type   = 'select',
-                name   = L.Strata,
-                order  = order(),
-                values = {
-                    ['LOW']    = LOW,
-                    ['MEDIUM'] = AUCTION_TIME_LEFT2,
-                    ['HIGH']   = HIGH,
-                }
-            }
-        }
-    }
+
+    local get, set = opts.get, opts.set
+    if opts.values and set then
+        opts.set = function(item, value)
+            return set(item, old[value])
+        end
+    end
+    if opts.values and get then
+        opts.get = function(item)
+            return new[get(item)]
+        end
+    end
+
+    if opts.values then
+        local values = {}
+        local len = #opts.values
+        local F = format('%%%dd\001%%s', len)
+
+        for i, v in ipairs(opts.values) do
+            local f = format(F, i, v.value)
+            values[f] = v.name
+            old[f] = v.value
+            new[v.value] = f
+        end
+
+        opts.values = values
+    end
+
+    opts.type  = 'select'
+    opts.order = order()
+
+    return opts
 end
 
+local SetProfile = function(profile)
+	Addon:SetProfile(profile)
+	Addon.profile = Addon:GetProfile()
+	Addon:UpdateFrames()
+end
 
 local general = {
     type = 'group',
@@ -155,13 +167,86 @@ local general = {
     }
 }
 
-local show = {
+local frame = {
     type        = 'group',
     childGroups = 'tab',
+    set    = function(item, value)
+        Addon.profile[Option.frameID][item[#item]] = value
+        Addon:UpdateFrames()
+    end,
+    get = function(item)
+        return Addon.profile[Option.frameID][item[#item]]
+    end,
     args        = {
         desc      = MakeDesc(L.FrameSettingsDesc),
-        inventory = MakeBagOption('inventory', order()),
-        bank      = MakeBagOption('bank', order()),
+        specific = {
+            type  = 'toggle',
+            name  = L.CharacterSpecific,
+            order = order(),
+            width = 'full',
+            confirm = function()
+                return not not Addon:GetSpecificProfile()
+            end,
+            confirmText = L.CharacterSpecificWarning,
+            get = function()
+                return Addon:GetSpecificProfile()
+            end,
+            set = function(_, value)
+                SetProfile(value and CopyTable(Addon.sets.global) or nil)
+            end,
+        },
+        header = MakeHeader(L.Frame),
+        frame  = MakeSelect({
+            name = L.Frame,
+            values = {
+                { name = INVENTORY_TOOLTIP, value = 'inventory' },
+                { name = BANK,              value = 'bank' },
+                { name = GUILD_BANK,        value = 'guild' },
+                { name = VOID_STORAGE,      value = 'vault' },
+            },
+            get = function() return  Option.frameID end,
+            set = function(_, value) Option.frameID = value end,
+        }),
+        display = {
+            type   = 'group',
+            name   = DISPLAY,
+            inline = true,
+            order  = order(),
+            hidden = function()
+                return Option.frameID == 'vault'
+            end,
+            args   = {
+                sort             = MakeToggle(L.Sort,             {hidden = function() return Option.frameID == 'guild' or Option.frameID == 'vault' end}),
+                money            = MakeToggle(L.Money,            {hidden = function() return Option.frameID == 'vault' end}),
+                broker           = MakeToggle(L.Token,            {hidden = function() return Option.frameID == 'guild' or Option.frameID == 'vault' end}),
+                exclusiveReagent = MakeToggle(L.ExclusiveReagent, {hidden = function() return Option.frameID ~= 'bank' end}),
+            }
+        },
+        appearance = {
+            type   = 'group',
+            name   = L.Appearance,
+            inline = true,
+            order  = order(),
+            args   = {
+                reverseBags  = MakeToggle(L.ReverseBags),
+                reverseSlots = MakeToggle(L.ReverseSlots),
+                bagBreak     = MakeToggle(L.BagBreak),
+                columns      = MakeRange(L.Columns, 6, 36, 1),
+                alpha        = MakeRange(L.Alpha, 0, 1),
+                scale        = MakeRange(L.Scale, 0.2, 3),
+                itemScale    = MakeRange(L.ItemScale, 0.2, 3),
+                strata       = MakeSelect({
+                    name = L.Strata,
+                    values = {
+                        { name = LOW,                value = 'LOW' },
+                        { name = AUCTION_TIME_LEFT2, value = 'MEDIUM' },
+                        { name = HIGH,               value = 'HIGH' },
+                    },
+                    get = function() return  Addon.profile[Option.frameID].strata end,
+                    set = function(_, value) Addon.profile[Option.frameID].strata = value end,
+                })
+            }
+        },
     }
 }
 
@@ -202,7 +287,7 @@ local colored = {
         colorSlots   = MakeFullToggle(L.ColorSlots),
         colors       = {
             type  = 'group',
-            name  = 'colors',
+            name  = L.ColorSlots,
             order = order(),
             inline = true,
             get = function(item)
@@ -237,24 +322,26 @@ do
 end
 
 AceConfigRegistry:RegisterOptionsTable('tdBag', general)
-AceConfigRegistry:RegisterOptionsTable('tdBag Frame', show)
-AceConfigRegistry:RegisterOptionsTable('tdBag Display', events)
-AceConfigRegistry:RegisterOptionsTable('tdBag Color', colored)
+AceConfigRegistry:RegisterOptionsTable('tdBag - ' .. L.FrameSettings, frame)
+AceConfigRegistry:RegisterOptionsTable('tdBag - ' .. L.DisplaySettings, events)
+AceConfigRegistry:RegisterOptionsTable('tdBag - ' .. L.ColorSettings, colored)
 
-AceConfigDialog:AddToBlizOptions('tdBag', 'tdBag')
-AceConfigDialog:AddToBlizOptions('tdBag Frame', L.FrameSettings, 'tdBag')
-AceConfigDialog:AddToBlizOptions('tdBag Display', L.DisplaySettings, 'tdBag')
-AceConfigDialog:AddToBlizOptions('tdBag Color', L.ColorSettings, 'tdBag')
+local general = AceConfigDialog:AddToBlizOptions('tdBag', 'tdBag')
+local frame   = AceConfigDialog:AddToBlizOptions('tdBag - ' .. L.FrameSettings, L.FrameSettings, 'tdBag')
+local events  = AceConfigDialog:AddToBlizOptions('tdBag - ' .. L.DisplaySettings, L.DisplaySettings, 'tdBag')
+local colored = AceConfigDialog:AddToBlizOptions('tdBag - ' .. L.ColorSettings, L.ColorSettings, 'tdBag')
 
-tdBag.GeneralOptions = {
-    Open = nop
-}
+local function OpenToCategory(f)
+    InterfaceOptionsFrame_OpenToCategory(f)
+    InterfaceOptionsFrame_OpenToCategory(f)
+    OpenToCategory = InterfaceOptionsFrame_OpenToCategory
+end
 
-tdBag.FrameOptions = {
-    Open = nop
-}
-
-print(1)
-
-
-dump(Addon.sets)
+function Option:Open(frameID)
+    if frameID then
+        self.frameID = frameID
+        OpenToCategory(frame)
+    else
+        OpenToCategory(general)
+    end
+end

@@ -21,6 +21,8 @@ L.Enabled           = 'Enable Frame'
 L.CharacterSpecific = 'Character Specific Settings'
 L.ExclusiveReagent  = 'Separate Reagent Bank'
 
+L.CharacterSpecificWarning = 'Are you sure you want to disable specific settings for this character? All specific settings will be lost.'
+
 L.BagFrame = 'Bag List'
 L.Money    = 'Money'
 L.Sort     = 'Sort Button'
