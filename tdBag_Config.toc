@@ -1,0 +1,8 @@
+## Interface: 70000
+## Title: tdBag_Config
+## Author: DengSir
+## Dependencies: tdBag
+## LoadOnDemand: 1
+## Version: 70000.01
+
+Load.xml
