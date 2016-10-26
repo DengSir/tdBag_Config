@@ -23,11 +23,12 @@ L.ExclusiveReagent  = 'Separate Reagent Bank'
 
 L.CharacterSpecificWarning = 'Are you sure you want to disable specific settings for this character? All specific settings will be lost.'
 
-L.BagFrame = 'Bag List'
-L.Money    = 'Money'
-L.Sort     = 'Sort Button'
-L.Token    = 'Currency'
-L.Options  = 'Options Button'
+L.BagFrame  = 'Bag List'
+L.Money     = 'Money'
+L.Sort      = 'Sort Button'
+L.Token     = 'Currency'
+L.Options   = 'Options Button'
+L.BagToggle = 'Bag Button'
 
 L.Appearance   = 'Appearance'
 L.Layer        = 'Layer'
@@ -40,7 +41,6 @@ L.Scale        = 'Scale'
 L.ItemScale    = 'Item Scale'
 L.Alpha        = 'Opacity'
 
--- auto display
 L.DisplaySettings     = 'Automatic Display'
 L.DisplaySettingsDesc = 'These settings allow you to configure when your inventory automatically opens or closes due to game events.'
 L.DisplayInventory    = 'Display Inventory'
@@ -60,7 +60,6 @@ L.CloseVehicle = 'Entering a Vehicle'
 L.CloseBank    = 'Leaving the Bank'
 L.CloseVendor  = 'Leaving a Vendor'
 
--- colors
 L.ColorSettings     = 'Color Settings'
 L.ColorSettingsDesc = 'These settings allow you to change how item slots are presented on tdBag frames for easier identification.'
 L.GlowQuality       = 'Highlight Items by Quality'

@@ -1,5 +1,5 @@
 <Ui xsi:schemaLocation="http://www.blizzard.com/wow/ui/
 ..\FrameXML\UI.xsd">
 	<Script file="en.lua" />
-    <!-- <Script file="cn.lua" /> -->
+    <Script file="cn.lua" />
 </Ui>

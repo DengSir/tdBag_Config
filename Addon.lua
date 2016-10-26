@@ -216,6 +216,8 @@ local frame = {
                 return Option.frameID == 'vault'
             end,
             args   = {
+                showBags         = MakeToggle(L.BagFrame),
+                bagFrame         = MakeToggle(L.BagToggle),
                 sort             = MakeToggle(L.Sort,             {hidden = function() return Option.frameID == 'guild' or Option.frameID == 'vault' end}),
                 money            = MakeToggle(L.Money,            {hidden = function() return Option.frameID == 'vault' end}),
                 broker           = MakeToggle(L.Token,            {hidden = function() return Option.frameID == 'guild' or Option.frameID == 'vault' end}),
