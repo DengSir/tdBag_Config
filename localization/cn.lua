@@ -22,7 +22,7 @@ L.Enabled           = 'Enable Frame'
 L.CharacterSpecific = '角色独立设置'
 L.ExclusiveReagent  = '独立材料银行'
 
-L.CharacterSpecificWarning = 'Are you sure you want to disable specific settings for this character? All specific settings will be lost.'
+L.CharacterSpecificWarning = '你确定要禁用角色独立设置吗？这将丢失这个角色的独立设置。'
 
 L.BagFrame  = '背包列表'
 L.Money     = '金币'
