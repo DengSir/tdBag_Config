@@ -21,6 +21,7 @@ L.Frame             = '背包'
 L.Enabled           = 'Enable Frame'
 L.CharacterSpecific = '角色独立设置'
 L.ExclusiveReagent  = '独立材料银行'
+L.ActPanel          = '标准面板'
 
 L.CharacterSpecificWarning = '你确定要禁用角色独立设置吗？这将丢失这个角色的独立设置。'
 

@@ -174,6 +174,7 @@ local displayDefine = {
         sort     = true,
         money    = true,
         broker   = true,
+        actPanel = true,
     },
     bank = {
         showBags         = true,
@@ -182,12 +183,14 @@ local displayDefine = {
         money            = true,
         broker           = true,
         exclusiveReagent = true,
+        actPanel         = true,
     },
     guild = {
-        money = true,
+        money    = true,
+        actPanel = true,
     },
     vault = {
-
+        actPanel = true,
     },
 }
 
@@ -249,6 +252,13 @@ local frame = {
                 money            = MakeToggle(L.Money,            displayMore),
                 broker           = MakeToggle(L.Token,            displayMore),
                 exclusiveReagent = MakeToggle(L.ExclusiveReagent, displayMore),
+                actPanel         = MakeToggle(L.ActPanel, {
+                    hidden = displayMore.hidden,
+                    set = function(item, value)
+                        Addon.profile[Option.frameID][item[#item]] = value
+                        Addon:GetFrame(Option.frameID):UpdateActPanel()
+                    end,
+                }),
             }
         },
         appearance = {
