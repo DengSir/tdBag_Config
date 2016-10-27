@@ -167,6 +167,36 @@ local general = {
     }
 }
 
+local displayDefine = {
+    inventory = {
+        showBags = true,
+        bagFrame = true,
+        sort     = true,
+        money    = true,
+        broker   = true,
+    },
+    bank = {
+        showBags         = true,
+        bagFrame         = true,
+        sort             = true,
+        money            = true,
+        broker           = true,
+        exclusiveReagent = true,
+    },
+    guild = {
+        money = true,
+    },
+    vault = {
+
+    },
+}
+
+local displayMore = {
+    hidden = function(item)
+        return not displayDefine[Option.frameID][item[#item]]
+    end
+}
+
 local frame = {
     type        = 'group',
     childGroups = 'tab',
@@ -212,16 +242,13 @@ local frame = {
             name   = DISPLAY,
             inline = true,
             order  = order(),
-            hidden = function()
-                return Option.frameID == 'vault'
-            end,
             args   = {
-                showBags         = MakeToggle(L.BagFrame),
-                bagFrame         = MakeToggle(L.BagToggle),
-                sort             = MakeToggle(L.Sort,             {hidden = function() return Option.frameID == 'guild' or Option.frameID == 'vault' end}),
-                money            = MakeToggle(L.Money,            {hidden = function() return Option.frameID == 'vault' end}),
-                broker           = MakeToggle(L.Token,            {hidden = function() return Option.frameID == 'guild' or Option.frameID == 'vault' end}),
-                exclusiveReagent = MakeToggle(L.ExclusiveReagent, {hidden = function() return Option.frameID ~= 'bank' end}),
+                showBags         = MakeToggle(L.BagFrame,         displayMore),
+                bagFrame         = MakeToggle(L.BagToggle,        displayMore),
+                sort             = MakeToggle(L.Sort,             displayMore),
+                money            = MakeToggle(L.Money,            displayMore),
+                broker           = MakeToggle(L.Token,            displayMore),
+                exclusiveReagent = MakeToggle(L.ExclusiveReagent, displayMore),
             }
         },
         appearance = {
