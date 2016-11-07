@@ -326,7 +326,6 @@ local colored = {
         glowArtifactPower = MakeFullToggle(L.GlowArtifactPower),
         colorSlots        = MakeFullToggle(L.ColorSlots),
         iconJunk          = MakeFullToggle(L.IconJunk),
-        iconUpgrade       = MakeFullToggle(L.IconUpgrade),
         colors            = {
             type  = 'group',
             name  = L.ColorSlots,

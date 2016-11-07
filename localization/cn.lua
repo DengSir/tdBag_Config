@@ -72,7 +72,6 @@ L.GlowSets          = '对套装物品着色'
 L.GlowArtifactPower = '对神器能量着色'
 L.ColorSlots        = '根据容器类型对空格着色'
 L.IconJunk          = '显示垃圾图标'
-L.IconUpgrade       = '显示升级图标'
 
 L.NormalColor   = '普通容器颜色'
 L.LeatherColor  = '制皮材料包颜色'

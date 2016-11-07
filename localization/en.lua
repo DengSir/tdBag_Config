@@ -71,7 +71,6 @@ L.GlowSets          = 'Highlight Equipment Set Items'
 L.GlowArtifactPower = 'Highlight Artifact Power'
 L.ColorSlots        = 'Color Empty Slots by Bag Type'
 L.IconJunk          = 'Junk Icon'
-L.IconUpgrade       = 'Upgrade Icon'
 
 L.NormalColor   = 'Normal Color'
 L.LeatherColor  = 'Leatherworking Color'
