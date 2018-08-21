@@ -3,14 +3,14 @@ Addon.lua
 @Author  : DengSir (tdaddon@163.com)
 @Link    : https://dengsir.github.io
 ]]
-
 local Addon = tdBag
 local L = LibStub('AceLocale-3.0'):GetLocale('tdBag_Config')
 
 local AceConfigRegistry = LibStub('AceConfigRegistry-3.0')
-local AceConfigDialog   = LibStub('AceConfigDialog-3.0')
+local AceConfigDialog = LibStub('AceConfigDialog-3.0')
 
-local Option = {} Addon.Option = Option
+local Option = {}
+Addon.Option = Option
 
 Option.frameID = 'inventory'
 
@@ -33,82 +33,76 @@ local function merge(dest, src)
     return dest
 end
 
-local function MakeFill()
-    return {
-        type  = 'description',
-        name  = '',
-        order = order(),
-    }
+local function toggle(name, more)
+    return merge(
+        {
+            type = 'toggle',
+            name = name,
+            order = order()
+        },
+        more
+    )
 end
 
-local function MakeToggle(name, more)
-    return merge({
-        type  = 'toggle',
-        name  = name,
+local function fullToggle(name)
+    return {
+        type = 'toggle',
+        width = 'full',
+        name = name,
         order = order()
-    }, more)
-end
-
-local function MakeFullToggle(name)
-    return {
-        type  = 'toggle',
-        width = 'full',
-        name  = name,
-        order = order(),
     }
 end
 
-local function MakeColor(name)
+local function color(name)
     return {
-        type  = 'color',
-        name  = name,
-        order = order(),
+        type = 'color',
+        name = name,
+        order = order()
     }
 end
 
-local function MakeRange(name, min, max, step)
+local function range(name, min, max, step)
     return {
-        type  = 'range',
+        type = 'range',
         order = order(),
-        name  = name,
-        min   = min,
-        max   = max,
-        step  = step,
+        name = name,
+        min = min,
+        max = max,
+        step = step
     }
 end
 
-local function MakeFullRange(name, min, max, step)
+local function fullRange(name, min, max, step)
     return {
-        type  = 'range',
+        type = 'range',
         width = 'full',
         order = order(),
-        name  = name,
-        min   = min,
-        max   = max,
-        step  = step,
+        name = name,
+        min = min,
+        max = max,
+        step = step
     }
 end
 
-local function MakeHeader(name)
+local function header(name)
     return {
-        type  = 'header',
+        type = 'header',
         order = order(),
-        name  = name,
+        name = name
     }
 end
 
-local function MakeDesc(name)
+local function desc(name)
     return {
-        type  = 'description',
+        type = 'description',
         order = order(),
-        name  = name .. '\n',
+        name = name .. '\n'
     }
 end
 
-local function MakeSelect(opts)
+local function drop(opts)
     local old = {}
     local new = {}
-
 
     local get, set = opts.get, opts.set
     if opts.values and set then
@@ -137,16 +131,10 @@ local function MakeSelect(opts)
         opts.values = values
     end
 
-    opts.type  = 'select'
+    opts.type = 'select'
     opts.order = order()
 
     return opts
-end
-
-local SetProfile = function(profile)
-	Addon:SetProfile(profile)
-	Addon.profile = Addon:GetProfile()
-	Addon:UpdateFrames()
 end
 
 local general = {
@@ -159,133 +147,95 @@ local general = {
         Addon:UpdateFrames()
     end,
     args = {
-        desc       = MakeDesc(L.GeneralDesc),
-        locked     = MakeFullToggle(L.Locked),
-        tipCount   = MakeFullToggle(L.TipCount),
-        flashFind  = MakeFullToggle(L.FlashFind),
-        emptySlots = MakeFullToggle(L.EmptySlots)
+        desc = desc(L.GeneralDesc),
+        locked = fullToggle(L.Locked),
+        tipCount = fullToggle(L.TipCount),
+        flashFind = fullToggle(L.FlashFind),
+        emptySlots = fullToggle(L.EmptySlots)
     }
 }
 
-local displayDefine = {
-    inventory = {
-        showBags = true,
-        bagFrame = true,
-        sort     = true,
-        money    = true,
-        broker   = true,
-        managed  = true,
-    },
-    bank = {
-        showBags         = true,
-        bagFrame         = true,
-        sort             = true,
-        money            = true,
-        broker           = true,
-        exclusiveReagent = true,
-        managed  = true,
-    },
-    guild = {
-        money    = true,
-        managed  = true,
-    },
-    vault = {
-        managed  = true,
-    },
-}
-
-local displayMore = {
-    hidden = function(item)
-        return not displayDefine[Option.frameID][item[#item]]
-    end
-}
-
 local frame = {
-    type        = 'group',
+    type = 'group',
     childGroups = 'tab',
-    set    = function(item, value)
+    set = function(item, value)
         Addon.profile[Option.frameID][item[#item]] = value
         Addon:UpdateFrames()
     end,
     get = function(item)
         return Addon.profile[Option.frameID][item[#item]]
     end,
-    args        = {
-        desc      = MakeDesc(L.FrameSettingsDesc),
-        specific = {
-            type  = 'toggle',
-            name  = L.CharacterSpecific,
-            order = order(),
-            width = 'full',
-            confirm = function()
-                return not not Addon:GetSpecificProfile()
-            end,
-            confirmText = L.CharacterSpecificWarning,
-            get = function()
-                return Addon:GetSpecificProfile()
-            end,
-            set = function(_, value)
-                SetProfile(value and CopyTable(Addon.sets.global) or nil)
-            end,
-        },
-        header = MakeHeader(L.Frame),
-        frame  = MakeSelect({
-            name = L.Frame,
-            values = {
-                { name = INVENTORY_TOOLTIP, value = 'inventory' },
-                { name = BANK,              value = 'bank' },
-                { name = GUILD_BANK,        value = 'guild' },
-                { name = VOID_STORAGE,      value = 'vault' },
-            },
-            get = function() return  Option.frameID end,
-            set = function(_, value) Option.frameID = value end,
-        }),
+    args = {
+        desc = desc(L.FrameSettingsDesc),
+        header = header(L.Frame),
+        frame = drop(
+            {
+                name = L.Frame,
+                values = {
+                    {name = INVENTORY_TOOLTIP, value = 'inventory'},
+                    {name = BANK, value = 'bank'}
+                },
+                get = function()
+                    return Option.frameID
+                end,
+                set = function(_, value)
+                    Option.frameID = value
+                end
+            }
+        ),
         display = {
-            type   = 'group',
-            name   = DISPLAY,
+            type = 'group',
+            name = DISPLAY,
             inline = true,
-            order  = order(),
-            args   = {
-                showBags         = MakeToggle(L.BagFrame,         displayMore),
-                bagFrame         = MakeToggle(L.BagToggle,        displayMore),
-                sort             = MakeToggle(L.Sort,             displayMore),
-                money            = MakeToggle(L.Money,            displayMore),
-                broker           = MakeToggle(L.Token,            displayMore),
-                exclusiveReagent = MakeToggle(L.ExclusiveReagent, displayMore),
-                managed          = MakeToggle(L.ActPanel, {
-                    hidden = displayMore.hidden,
-                    set = function(item, value)
-                        Addon.profile[Option.frameID][item[#item]] = value
-                        Addon:GetFrame(Option.frameID):UpdateAppearance()
-                    end,
-                }),
+            order = order(),
+            args = {
+                showBags = toggle(L.BagFrame),
+                bagToggle = toggle(L.BagToggle),
+                sort = toggle(L.Sort),
+                money = toggle(L.Money),
+                broker = toggle(L.Token),
+                exclusiveReagent = toggle(
+                    L.ExclusiveReagent,
+                    {
+                        hidden = function()
+                            return Option.frameID ~= 'bank'
+                        end
+                    }
+                )
             }
         },
         appearance = {
-            type   = 'group',
-            name   = L.Appearance,
+            type = 'group',
+            name = L.Appearance,
             inline = true,
-            order  = order(),
-            args   = {
-                reverseBags  = MakeToggle(L.ReverseBags),
-                reverseSlots = MakeToggle(L.ReverseSlots),
-                bagBreak     = MakeToggle(L.BagBreak),
-                columns      = MakeRange(L.Columns, 6, 36, 1),
-                alpha        = MakeRange(L.Alpha, 0, 1),
-                scale        = MakeRange(L.Scale, 0.2, 3),
-                itemScale    = MakeRange(L.ItemScale, 0.2, 3),
-                strata       = MakeSelect({
-                    name = L.Strata,
-                    values = {
-                        { name = LOW,                value = 'LOW' },
-                        { name = AUCTION_TIME_LEFT2, value = 'MEDIUM' },
-                        { name = HIGH,               value = 'HIGH' },
-                    },
-                    get = function() return  Addon.profile[Option.frameID].strata end,
-                    set = function(_, value) Addon.profile[Option.frameID].strata = value end,
-                })
+            order = order(),
+            args = {
+                managed = toggle(L.ActPanel),
+                reverseBags = toggle(L.ReverseBags),
+                reverseSlots = toggle(L.ReverseSlots),
+                columns = range(L.Columns, 6, 36, 1),
+                alpha = range(L.Alpha, 0, 1),
+                scale = range(L.Scale, 0.2, 3),
+                itemScale = range(L.ItemScale, 0.2, 3),
+                strata = drop(
+                    {
+                        name = L.Strata,
+                        values = {
+                            {name = LOW, value = 'LOW'},
+                            {name = AUCTION_TIME_LEFT2, value = 'MEDIUM'},
+                            {name = HIGH, value = 'HIGH'}
+                        },
+                        get = function()
+                            return Addon.profile[Option.frameID].strata
+                        end,
+                        set = function(_, value)
+                            Addon.profile[Option.frameID].strata = value
+                            Addon:UpdateFrames()
+                        end
+                    }
+                )
             }
-        },
+        }
     }
 }
 
@@ -294,41 +244,41 @@ local events = {
     get = general.get,
     set = general.set,
     args = {
-        desc             = MakeDesc(L.DisplaySettingsDesc),
-        display          = MakeHeader(L.DisplayInventory),
-        displayBank      = MakeFullToggle(L.DisplayBank),
-        displayAuction   = MakeFullToggle(L.DisplayAuction),
-        displayGuildbank = MakeFullToggle(L.DisplayGuildbank),
-        displayMail      = MakeFullToggle(L.DisplayMail),
-        displayPlayer    = MakeFullToggle(L.DisplayPlayer),
-        displayTrade     = MakeFullToggle(L.DisplayTrade),
-        displayGems      = MakeFullToggle(L.DisplayGems),
-        displayCraft     = MakeFullToggle(L.DisplayCraft),
-        close            = MakeHeader(L.CloseInventory),
-        closeBank        = MakeFullToggle(L.CloseBank),
-        closeCombat      = MakeFullToggle(L.CloseCombat),
-        closeVehicle     = MakeFullToggle(L.CloseVehicle),
-        closeVendor      = MakeFullToggle(L.CloseVendor),
+        desc = desc(L.DisplaySettingsDesc),
+        display = header(L.DisplayInventory),
+        displayBank = fullToggle(L.DisplayBank),
+        displayAuction = fullToggle(L.DisplayAuction),
+        displayGuildbank = fullToggle(L.DisplayGuildbank),
+        displayMail = fullToggle(L.DisplayMail),
+        displayPlayer = fullToggle(L.DisplayPlayer),
+        displayTrade = fullToggle(L.DisplayTrade),
+        displayGems = fullToggle(L.DisplayGems),
+        displayCraft = fullToggle(L.DisplayCraft),
+        close = header(L.CloseInventory),
+        closeBank = fullToggle(L.CloseBank),
+        closeCombat = fullToggle(L.CloseCombat),
+        closeVehicle = fullToggle(L.CloseVehicle),
+        closeVendor = fullToggle(L.CloseVendor),
+        closeMap = fullToggle(L.CloseMap)
     }
 }
 
 local colored = {
     type = 'group',
-    get  = general.get,
-    set  = general.set,
+    get = general.get,
+    set = general.set,
     args = {
-        desc              = MakeDesc(L.ColorSettingsDesc),
-        glowQuality       = MakeFullToggle(L.GlowQuality),
-        glowNew           = MakeFullToggle(L.GlowNew),
-        glowQuest         = MakeFullToggle(L.GlowQuest),
-        glowUnusable      = MakeFullToggle(L.GlowUnusable),
-        glowSets          = MakeFullToggle(L.GlowSets),
-        glowArtifactPower = MakeFullToggle(L.GlowArtifactPower),
-        colorSlots        = MakeFullToggle(L.ColorSlots),
-        iconJunk          = MakeFullToggle(L.IconJunk),
-        colors            = {
-            type  = 'group',
-            name  = L.ColorSlots,
+        desc = desc(L.ColorSettingsDesc),
+        glowQuality = fullToggle(L.GlowQuality),
+        glowNew = fullToggle(L.GlowNew),
+        glowQuest = fullToggle(L.GlowQuest),
+        glowUnusable = fullToggle(L.GlowUnusable),
+        glowSets = fullToggle(L.GlowSets),
+        colorSlots = fullToggle(L.ColorSlots),
+        iconJunk = fullToggle(L.IconJunk),
+        colors = {
+            type = 'group',
+            name = L.ColorSlots,
             order = order(),
             inline = true,
             get = function(item)
@@ -340,17 +290,16 @@ local colored = {
                 color[1], color[2], color[3] = ...
                 Addon:UpdateFrames()
             end,
-            args  = {
-            }
+            args = {}
         },
-        glowAlpha = MakeFullRange(L.GlowAlpha, 0, 1)
+        glowAlpha = fullRange(L.GlowAlpha, 0, 1)
     }
 }
 
 do
     local SLOT_COLOR_TYPES = {}
     for id, name in pairs(Addon.BAG_TYPES) do
-    	tinsert(SLOT_COLOR_TYPES, name)
+        tinsert(SLOT_COLOR_TYPES, name)
     end
 
     sort(SLOT_COLOR_TYPES)
@@ -358,7 +307,7 @@ do
 
     for i, name in ipairs(SLOT_COLOR_TYPES) do
         local key = name .. 'Color'
-        colored.args.colors.args[key] = MakeColor(L[key:gsub('^.', strupper)])
+        colored.args.colors.args[key] = color(L[key:gsub('^.', strupper)])
     end
 end
 
@@ -368,21 +317,15 @@ AceConfigRegistry:RegisterOptionsTable('tdBag - ' .. L.DisplaySettings, events)
 AceConfigRegistry:RegisterOptionsTable('tdBag - ' .. L.ColorSettings, colored)
 
 local general = AceConfigDialog:AddToBlizOptions('tdBag', 'tdBag')
-local frame   = AceConfigDialog:AddToBlizOptions('tdBag - ' .. L.FrameSettings, L.FrameSettings, 'tdBag')
-local events  = AceConfigDialog:AddToBlizOptions('tdBag - ' .. L.DisplaySettings, L.DisplaySettings, 'tdBag')
+local frame = AceConfigDialog:AddToBlizOptions('tdBag - ' .. L.FrameSettings, L.FrameSettings, 'tdBag')
+local events = AceConfigDialog:AddToBlizOptions('tdBag - ' .. L.DisplaySettings, L.DisplaySettings, 'tdBag')
 local colored = AceConfigDialog:AddToBlizOptions('tdBag - ' .. L.ColorSettings, L.ColorSettings, 'tdBag')
-
-local function OpenToCategory(f)
-    InterfaceOptionsFrame_OpenToCategory(f)
-    InterfaceOptionsFrame_OpenToCategory(f)
-    OpenToCategory = InterfaceOptionsFrame_OpenToCategory
-end
 
 function Option:Open(frameID)
     if frameID then
         self.frameID = frameID
-        OpenToCategory(frame)
+        InterfaceOptionsFrame_OpenToCategory(frame)
     else
-        OpenToCategory(general)
+        InterfaceOptionsFrame_OpenToCategory(general)
     end
 end
