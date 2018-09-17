@@ -11,6 +11,7 @@ end
 L.GeneralDesc = '通用偏好设置。'
 L.Locked = '锁定位置'
 L.TipCount = '鼠标提示物品统计'
+L.CountGuild = '包括公会银行'
 L.FlashFind = '闪烁搜索'
 L.EmptySlots = '空格背景材质'
 L.DisplayBlizzard = 'Display Blizzard Frames for Hidden Bags'
