@@ -270,7 +270,7 @@ local options = {
             }
         ),
         general = group(
-            L.General,
+            GENERAL,
             {
                 desc = desc(L.GeneralDesc),
                 locked = fullToggle(L.Locked),
